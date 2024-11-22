@@ -1,9 +1,7 @@
+from modules.text_decenc import text_encrypter, decrypter_text
+from modules.file_decenc import DataArmor_deenc
 from modules.cli_cleaner import cli_cleaner
 from interface.layout import layout
-from modules.text.txt_encrypter import text_encrypter
-from modules.text.txt_decrypter import decrypter_text
-from modules.file.file_encrypter import FileEncrypter
-from modules.file.file_decrypter import decrypter_by_keycli
 from questionary import select, Style, text
 from colorama import Fore
 
@@ -15,11 +13,12 @@ class App:
             ('selected', '#000000'),
             ('text', '#00FFFF')
         ])
-        self.file_encrypter = FileEncrypter()
+        self.file_deenc = DataArmor_deenc()
         
-    def run(self):
+    def run(self) -> str:
         cli_cleaner
         layout()
+        
         while True:
             try:
                 user_input = select(
@@ -38,6 +37,7 @@ class App:
                 if user_input == "Text Encrypter":
                         cli_cleaner()
                         layout()
+                        
                         text_input = text("Enter text:",
                                         style=self.custom_theme,
                                         qmark=""
@@ -47,15 +47,17 @@ class App:
                 if user_input == "File Encrypter":
                     cli_cleaner()
                     layout()
+
                     filepath = text("Enter File Path: ",
                                     style=self.custom_theme,
                                     qmark="").ask()
-                    self.file_encrypter.file_encrypter(filepath)
                     
-        
+                    self.file_deenc.file_encrypter(filepath)
+                    
                 if user_input == "Decrypter":
                     cli_cleaner()
                     layout()
+                    
                     user_input_decrypter = select(
                         "Decrypter Options:",
                         choices=[
@@ -66,7 +68,18 @@ class App:
                         qmark="",
                         instruction=" "
                     ).ask()
-                    if user_input_decrypter == "Decrypt File":
+
+                    if user_input_decrypter == "Decrypt Text":
+                            textcli = text("Enter Token: ",
+                                                style=self.custom_theme,
+                                                qmark="").ask()
+                            key = text("Enter Key: ",
+                                                style=self.custom_theme,
+                                                qmark="").ask()
+                            
+                            print(f"{Fore.CYAN}Text Decrypted: {Fore.WHITE}{decrypter_text(textcli,key)}")
+
+                    elif user_input_decrypter == "Decrypt File":
                         user_input_keydecrypter = select(
                             "Key Options:",
                             choices=[
@@ -77,13 +90,15 @@ class App:
                             qmark="",
                             instruction=" "
                         ).ask()
+                        
                         try:
                             if user_input_keydecrypter == "By .key file":
                                 print(f"{Fore.CYAN}\n The Key have to be in key.key!\n")
+                                
                                 filepath = text("Enter File Path: ",
                                                     style=self.custom_theme,
                                                     qmark="").ask()
-                                
+                                self.file_deenc.decrypter_by_keyfile(filepath)
                             elif user_input_keydecrypter == "By Key CLI":
                                 filepath = text("Enter File Path: ",
                                                     style=self.custom_theme,
@@ -91,21 +106,20 @@ class App:
                                 keycli = text("Enter Key: ",
                                                     style=self.custom_theme,
                                                     qmark="").ask()
-                                print(f"\n{Fore.WHITE}Decripted File: {Fore.CYAN}{decrypter_by_keycli(filepath,keycli)}\n") 
-                            self.file_encrypter.encrypted_text(filepath)
+                                
+                                print(f"\n{Fore.WHITE}Decripted File: {Fore.CYAN}{self.file_deenc.decrypter_by_keycli(filepath,keycli)}\n") 
+                                
+                            self.file_deenc.encrypted_text(filepath)
+                            
                         except AttributeError:
                             print("An attribute error occurred!")
-                    elif user_input_decrypter == "Decrypt Text":
-                            textcli = text("Enter Token: ",
-                                                style=self.custom_theme,
-                                                qmark="").ask()
-                            key = text("Enter Key: ",
-                                                style=self.custom_theme,
-                                                qmark="").ask()
-                            print(f"{Fore.CYAN}Text Decrypted: {Fore.WHITE}{decrypter_text(textcli,key)}")
+                            
+
+                    
                 if user_input == "Exit":
                     print(f"\n{Fore.GREEN}  Goodbye!\n")
                     break
+                
             except KeyboardInterrupt:
                 return "Program Interrupted."
                 
